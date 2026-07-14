@@ -25,3 +25,16 @@ npm run build
 - Never expose the service role key in the browser.
 - Configure production OAuth redirect URLs before launch.
 - Replace `public/logo.svg` with the official uploaded logo if a different source asset is provided.
+
+## Netlify
+
+This project includes `netlify.toml` and `@netlify/plugin-nextjs`.
+
+Use:
+
+```text
+Build command: npm run build
+Publish directory: .next
+```
+
+Set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `NEXT_PUBLIC_APP_URL` in Netlify environment variables.
