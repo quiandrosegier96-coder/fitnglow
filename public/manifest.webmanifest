@@ -1,0 +1,20 @@
+{
+  "name": "Fit & Glow Club",
+  "short_name": "FitGlow",
+  "description": "Premium fitness, nutrition, progress, and coaching platform.",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FFF8F9",
+  "theme_color": "#F87AA2",
+  "categories": ["fitness", "health", "lifestyle"],
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": []
+}

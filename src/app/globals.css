@@ -1,0 +1,81 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap");
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #fff8f9;
+  --foreground: #222222;
+  --card: #ffffff;
+  --muted: #7b6870;
+  --primary: #f87aa2;
+  --secondary: #fdc7d7;
+  --rose-gold: linear-gradient(135deg, #f87aa2 0%, #fdc7d7 48%, #c99063 100%);
+}
+
+.dark {
+  --background: #171216;
+  --foreground: #fff7f9;
+  --card: #231a20;
+  --muted: #d8b8c3;
+  --primary: #ff8eb1;
+  --secondary: #5b2a3b;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --font-sans: "Inter", sans-serif;
+  --font-serif: "Playfair Display", serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(253, 199, 215, 0.38), transparent 34rem),
+    radial-gradient(circle at bottom right, rgba(201, 144, 99, 0.16), transparent 30rem),
+    var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+a,
+button,
+input,
+select,
+textarea {
+  transition: all 180ms ease;
+}
+
+.rose-gold {
+  background: var(--rose-gold);
+}
+
+.glass-card {
+  background: color-mix(in srgb, var(--card) 86%, transparent);
+  box-shadow: 0 24px 70px rgba(248, 122, 162, 0.14);
+  backdrop-filter: blur(18px);
+}
+
+.fade-in {
+  animation: fade-in 450ms ease both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
