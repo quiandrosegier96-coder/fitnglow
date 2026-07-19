@@ -5,6 +5,7 @@ The foundation migration is:
 ```text
 supabase/migrations/20260714220000_initial_project_foundation.sql
 supabase/migrations/20260714223000_workout_module.sql
+supabase/migrations/20260719090000_onboarding_body_profile.sql
 ```
 
 ## Tables
@@ -34,6 +35,15 @@ supabase/migrations/20260714223000_workout_module.sql
 - `exercise_media`
 - `exercise_comments`
 - `exercise_ratings`
+- `body_profiles`
+- `fitness_profiles`
+- `nutrition_profiles`
+- `lifestyle_profiles`
+- `goal_profiles`
+- `measurements`
+- `weight_history`
+- `water_logs`
+- `meal_logs`
 
 ## Security
 

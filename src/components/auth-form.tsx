@@ -50,7 +50,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" | "forgot" }) {
         email: values.email,
         password: values.password ?? "",
         options: {
-          emailRedirectTo: `${appUrl}/dashboard`,
+          emailRedirectTo: `${appUrl}/onboarding`,
           data: { full_name: values.fullName ?? "" }
         }
       });

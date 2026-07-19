@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const protectedRoutes = ["/dashboard", "/workouts", "/recipes", "/nutrition", "/tips", "/progress", "/community", "/settings", "/profile", "/coach", "/admin"];
+const protectedRoutes = ["/dashboard", "/workouts", "/recipes", "/nutrition", "/tips", "/progress", "/community", "/settings", "/profile", "/coach", "/admin", "/onboarding"];
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -35,6 +35,24 @@ export async function middleware(request: NextRequest) {
     login.pathname = "/login";
     login.searchParams.set("redirectedFrom", path);
     return NextResponse.redirect(login);
+  }
+
+  if (user && isProtected) {
+    const { data: onboarding, error } = await supabase
+      .from("body_profiles")
+      .select("onboarding_completed")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (!error) {
+      const completed = onboarding?.onboarding_completed === true;
+      if (!completed && !path.startsWith("/onboarding")) {
+        return NextResponse.redirect(new URL("/onboarding", request.url));
+      }
+      if (completed && path.startsWith("/onboarding")) {
+        return NextResponse.redirect(new URL("/dashboard", request.url));
+      }
+    }
   }
 
   if (user && (path.startsWith("/admin") || path.startsWith("/coach"))) {

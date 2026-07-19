@@ -9,11 +9,13 @@ import { MetricCard } from "@/components/metric-card";
 import { PageHeader } from "@/components/page-header";
 import { WorkoutCard } from "@/components/workout-card";
 import { ProgressChart } from "@/components/progress-chart";
+import { BodyProfileSummary } from "@/components/onboarding/body-profile-summary";
 
 export default function DashboardPage() {
   return (
     <div className="space-y-8">
       <PageHeader eyebrow="Good evening, Joyce" title="Your glow dashboard" description="A calm command center for training, nutrition, progress, reminders, and the next best action today." />
+      <BodyProfileSummary />
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {metrics.map((metric) => <MetricCard key={metric.label} {...metric} />)}
       </section>

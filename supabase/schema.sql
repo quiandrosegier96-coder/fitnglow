@@ -4,3 +4,5 @@
 -- supabase/migrations/20260714220000_initial_project_foundation.sql
 -- Workout module migration:
 -- supabase/migrations/20260714223000_workout_module.sql
+-- Onboarding and body profile migration:
+-- supabase/migrations/20260719090000_onboarding_body_profile.sql
