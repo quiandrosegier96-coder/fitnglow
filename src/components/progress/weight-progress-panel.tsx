@@ -69,7 +69,11 @@ export function WeightProgressPanel() {
     }
     if (!response.ok) {
       const payload = await response.json().catch(() => ({ error: "Could not save weight" }));
-      toast({ title: "Weight not saved", description: payload.error ?? "Check the value and try again." });
+      const description = payload.error ?? "Check the value and try again.";
+      toast({
+        title: description.includes("Database setup incomplete") ? "Database table missing" : "Weight not saved",
+        description
+      });
       return;
     }
     setWeightKg("");
