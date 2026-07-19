@@ -189,7 +189,7 @@ export function OnboardingFlow() {
     }
     await save(totalSteps, true);
     window.localStorage.removeItem(storageKey);
-    router.push("/dashboard");
+    router.push("/welcome");
   }
 
   return (

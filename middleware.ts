@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const protectedRoutes = ["/dashboard", "/workouts", "/recipes", "/nutrition", "/tips", "/progress", "/community", "/settings", "/profile", "/coach", "/admin", "/onboarding"];
+const protectedRoutes = ["/dashboard", "/workouts", "/recipes", "/nutrition", "/tips", "/progress", "/community", "/settings", "/profile", "/coach", "/admin", "/onboarding", "/welcome"];
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -38,18 +38,32 @@ export async function middleware(request: NextRequest) {
   }
 
   if (user && isProtected) {
-    const { data: onboarding, error } = await supabase
-      .from("body_profiles")
-      .select("onboarding_completed")
-      .eq("user_id", user.id)
-      .maybeSingle();
+    const [onboardingResult, profileResult] = await Promise.all([
+      supabase
+        .from("body_profiles")
+        .select("onboarding_completed")
+        .eq("user_id", user.id)
+        .maybeSingle(),
+      supabase
+        .from("profiles")
+        .select("welcome_completed")
+        .eq("id", user.id)
+        .maybeSingle()
+    ]);
 
-    if (!error) {
-      const completed = onboarding?.onboarding_completed === true;
+    if (!onboardingResult.error) {
+      const completed = onboardingResult.data?.onboarding_completed === true;
+      const welcomeCompleted = profileResult.data?.welcome_completed === true;
       if (!completed && !path.startsWith("/onboarding")) {
         return NextResponse.redirect(new URL("/onboarding", request.url));
       }
       if (completed && path.startsWith("/onboarding")) {
+        return NextResponse.redirect(new URL(welcomeCompleted ? "/dashboard" : "/welcome", request.url));
+      }
+      if (completed && !welcomeCompleted && !path.startsWith("/welcome")) {
+        return NextResponse.redirect(new URL("/welcome", request.url));
+      }
+      if (completed && welcomeCompleted && path.startsWith("/welcome")) {
         return NextResponse.redirect(new URL("/dashboard", request.url));
       }
     }
