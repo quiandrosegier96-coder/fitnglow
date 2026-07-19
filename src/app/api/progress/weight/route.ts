@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { assertCsrf, rateLimit, validateBody } from "@/lib/security";
+import { calculateBmiDashboard, calculateWeightProgress } from "@/lib/dashboard-calculations";
 import { weightLogSchema } from "@/lib/schemas";
 import { createClient } from "@/lib/supabase/server";
 import { UserMetricsService } from "@/lib/user-metrics-service";
@@ -8,11 +9,20 @@ const missingWeightLogsMessage = "Database setup incomplete: run supabase/sql/fi
 
 export async function GET() {
   const supabase = await createClient();
-  if (!supabase) return NextResponse.json({ logs: [] });
+  if (!supabase) return NextResponse.json(emptyProgressMetrics());
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Login required to load weight history." }, { status: 401 });
-  const logs = await new UserMetricsService(supabase).getWeightHistory(user.id);
-  return NextResponse.json({ logs: logs.map((row) => ({ weightKg: row.weight_kg, loggedAt: row.logged_at })) });
+  const metrics = await getProgressMetrics(new UserMetricsService(supabase), user.id);
+  return NextResponse.json(metrics);
+}
+
+function emptyProgressMetrics() {
+  return {
+    logs: [],
+    currentWeight: null,
+    weightProgress: { startingWeight: 0, currentWeight: 0, difference: 0, trend: "Stable", trendDirection: "stable" },
+    bmi: { bmi: 0, category: "Healthy", healthyRange: "Complete onboarding", targetWeight: 0, daysUntilTarget: 0, progressPercentage: 0 }
+  };
 }
 
 export async function POST(request: NextRequest) {
@@ -51,4 +61,24 @@ export async function POST(request: NextRequest) {
 function isMissingWeightLogsTable(error: { code?: string; message?: string }) {
   const message = error.message?.toLowerCase() ?? "";
   return error.code === "42P01" || error.code === "PGRST205" || (message.includes("weight_logs") && message.includes("schema cache"));
+}
+
+async function getProgressMetrics(service: UserMetricsService, userId: string) {
+  const [logs, bodyProfile] = await Promise.all([
+    service.getWeightHistory(userId),
+    service.getBodyProfile(userId)
+  ]);
+  const currentWeight = logs.at(-1)?.weight_kg ?? null;
+  const profile = {
+    height_cm: bodyProfile?.height_cm ?? null,
+    target_weight_kg: bodyProfile?.target_weight_kg ?? null,
+    latestWeightKg: currentWeight
+  };
+
+  return {
+    logs: logs.map((row) => ({ weightKg: row.weight_kg, loggedAt: row.logged_at })),
+    currentWeight,
+    weightProgress: calculateWeightProgress(logs, profile),
+    bmi: calculateBmiDashboard(profile)
+  };
 }

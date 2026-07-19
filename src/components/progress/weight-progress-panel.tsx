@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { LineChart, LockKeyhole, Save } from "lucide-react";
+import { Activity, LineChart, LockKeyhole, Save, Scale } from "lucide-react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,12 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
 
 type WeightLog = { weightKg: number; loggedAt: string };
+type WeightProgressData = {
+  logs: WeightLog[];
+  currentWeight: number | null;
+  weightProgress: { difference: number; trend: string; currentWeight: number; startingWeight: number };
+  bmi: { bmi: number; category: string; healthyRange: string; daysUntilTarget: number; progressPercentage: number };
+};
 type ApiError = Error & { status?: number };
 
 export function WeightProgressPanel() {
@@ -33,8 +39,7 @@ export function WeightProgressPanel() {
       }
       if (!response.ok) throw new Error("Could not load weight logs");
       setAuthRequired(false);
-      const payload = await response.json() as { logs: WeightLog[] };
-      return payload.logs;
+      return response.json() as Promise<WeightProgressData>;
     },
     retry: (failureCount, error) => (error as ApiError).status !== 401 && failureCount < 2
   });
@@ -81,7 +86,7 @@ export function WeightProgressPanel() {
     toast({ title: "Weight saved", description: "Dashboard, BMI, charts, and statistics are updating now." });
   }
 
-  const chartData = (query.data ?? []).map((log) => ({
+  const chartData = (query.data?.logs ?? []).map((log) => ({
     date: new Date(log.loggedAt).toLocaleDateString("en", { month: "short", day: "numeric" }),
     weight: log.weightKg
   }));
@@ -136,7 +141,22 @@ export function WeightProgressPanel() {
           <Button className="w-full" disabled={saving} type="submit"><Save size={17} /> {saving ? "Saving" : "Save weight"}</Button>
         </form>
         <p className="mt-4 text-sm leading-6 text-muted">The newest `weight_logs` record is the source of truth for current weight, BMI, goal progress, charts, and dashboard cards.</p>
+        <div className="mt-6 grid gap-3">
+          <MetricTile icon={<Scale size={18} />} label="Current weight" value={query.data?.currentWeight ? `${query.data.currentWeight} kg` : "--"} />
+          <MetricTile icon={<Activity size={18} />} label="BMI" value={query.data?.bmi?.bmi ? String(query.data.bmi.bmi) : "--"} />
+          <MetricTile icon={<Activity size={18} />} label="BMI category" value={query.data?.bmi?.bmi ? query.data.bmi.category : "Add height in onboarding"} />
+          <MetricTile icon={<Scale size={18} />} label="Healthy range" value={query.data?.bmi?.healthyRange ?? "Complete onboarding"} />
+        </div>
       </Card>
+    </div>
+  );
+}
+
+function MetricTile({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <div className="rounded-2xl bg-secondary/20 p-4">
+      <div className="flex items-center gap-2 text-primary">{icon}<span className="text-sm font-black text-muted">{label}</span></div>
+      <p className="mt-2 text-xl font-black">{value}</p>
     </div>
   );
 }

@@ -54,11 +54,25 @@ export class UserMetricsService {
       .eq("user_id", userId)
       .maybeSingle();
 
-    return data
+    if (data) {
+      return {
+        height_cm: data.height_cm === null ? null : Number(data.height_cm),
+        target_weight_kg: data.target_weight_kg === null ? null : Number(data.target_weight_kg),
+        onboarding_completed: Boolean(data.onboarding_completed)
+      };
+    }
+
+    const { data: profile } = await this.supabase
+      .from("profiles")
+      .select("height_cm")
+      .eq("id", userId)
+      .maybeSingle();
+
+    return profile?.height_cm
       ? {
-          height_cm: data.height_cm === null ? null : Number(data.height_cm),
-          target_weight_kg: data.target_weight_kg === null ? null : Number(data.target_weight_kg),
-          onboarding_completed: Boolean(data.onboarding_completed)
+          height_cm: Number(profile.height_cm),
+          target_weight_kg: null,
+          onboarding_completed: false
         }
       : null;
   }
