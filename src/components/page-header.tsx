@@ -1,5 +1,3 @@
-import { Badge } from "@/components/ui/badge";
-
 export function PageHeader({
   eyebrow,
   title,
@@ -10,11 +8,11 @@ export function PageHeader({
   description: string;
 }) {
   return (
-    <section className="fade-in mb-7 flex flex-col gap-3">
-      <Badge className="w-fit">{eyebrow}</Badge>
+    <section className="fade-in mb-5 flex flex-col gap-1">
+      <p className="text-xs font-bold text-primary">{eyebrow}</p>
       <div className="max-w-3xl">
-        <h1 className="font-serif text-4xl font-extrabold tracking-normal sm:text-5xl">{title}</h1>
-        <p className="mt-3 text-base leading-7 text-muted sm:text-lg">{description}</p>
+        <h1 className="font-serif text-2xl font-extrabold tracking-normal sm:text-3xl">{title}</h1>
+        <p className="mt-1 text-sm leading-6 text-muted">{description}</p>
       </div>
     </section>
   );

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Activity, ArrowDown, ArrowRight, ArrowUp, CalendarDays, Flame, HeartPulse, Minus, Quote, Scale, Sparkles, Trophy } from "lucide-react";
+import { Activity, ArrowDown, ArrowRight, ArrowUp, CalendarDays, ChevronRight, Flame, HeartPulse, Minus, Sparkles, Trophy } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
@@ -25,17 +25,17 @@ type DashboardData = {
 };
 
 const bmiTone: Record<string, string> = {
-  Underweight: "border-sky-300 bg-sky-50 text-sky-950 dark:bg-sky-950/35 dark:text-sky-100",
-  Healthy: "border-emerald-300 bg-emerald-50 text-emerald-950 dark:bg-emerald-950/35 dark:text-emerald-100",
-  Overweight: "border-orange-300 bg-orange-50 text-orange-950 dark:bg-orange-950/35 dark:text-orange-100",
-  Obese: "border-red-300 bg-red-50 text-red-950 dark:bg-red-950/35 dark:text-red-100"
+  Underweight: "bg-sky-50 text-sky-800",
+  Healthy: "bg-emerald-50 text-emerald-800",
+  Overweight: "bg-orange-50 text-orange-800",
+  Obese: "bg-red-50 text-red-800"
 };
 
 export function DynamicDashboard() {
   const query = useQuery({
     queryKey: ["dashboard"],
     queryFn: async () => {
-      const response = await fetch("/api/dashboard");
+      const response = await fetch("/api/dashboard", { credentials: "same-origin" });
       if (!response.ok) throw new Error("Dashboard could not load");
       return response.json() as Promise<DashboardData>;
     },
@@ -59,72 +59,125 @@ export function DynamicDashboard() {
     };
   }, [query]);
 
-  const data = query.data;
-
   return (
-    <div className="space-y-8">
-      <PageHeader eyebrow="Good evening" title="Your glow dashboard" description="Live progress from your workouts, body profile, logs, achievements, and daily motivation." />
-      {!data ? <DashboardSkeleton /> : <DashboardContent data={data} />}
+    <div className="space-y-5">
+      <PageHeader eyebrow="1. Dashboard - Overview" title="Dashboard" description="Jouw voortgang, workouts en dagelijkse motivatie in een helder overzicht." />
+      {!query.data ? <DashboardSkeleton /> : <DashboardContent data={query.data} />}
     </div>
   );
 }
 
 function DashboardContent({ data }: { data: DashboardData }) {
   const TrendIcon = data.weightProgress.trendDirection === "down" ? ArrowDown : data.weightProgress.trendDirection === "up" ? ArrowUp : Minus;
+
   return (
-    <>
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <LiveMetric title="Current Streak" value={`${data.currentStreak}`} suffix="days" icon={<Flame />} hint={data.empty.workouts ? "Complete your first workout to start a streak." : "Consecutive workout days"} />
-        <LiveMetric title="Calories Burned" value={`${data.calories.total}`} suffix="kcal" icon={<HeartPulse />} hint={`Today ${data.calories.today} · Week ${data.calories.week} · Month ${data.calories.month}`} />
-        <LiveMetric title="Weight Progress" value={`${data.weightProgress.difference > 0 ? "+" : ""}${data.weightProgress.difference}`} suffix="kg" icon={<TrendIcon />} hint={data.empty.weight ? "Log weight to start tracking." : data.weightProgress.trend} />
-        <LiveMetric title="Level" value={`${data.level.level}`} suffix={`XP ${data.level.xp}`} icon={<Trophy />} hint={`${data.level.progressToNextLevel}% to level ${data.level.level + 1}`} progress={data.level.progressToNextLevel} />
-      </section>
-
-      <section className="grid gap-6 lg:grid-cols-[1.1fr_.9fr]">
-        <Card className="rose-gold text-white">
-          <Quote className="mb-4" />
-          <h2 className="font-serif text-4xl font-bold">Today’s motivation</h2>
-          <p className="mt-4 max-w-2xl text-lg leading-8 text-white/90">{data.quote}</p>
-          <div className="mt-7 grid gap-3 sm:grid-cols-4">
-            {data.quickActions.map((action) => (
-              <Button key={action.href} asChild variant="secondary" className="bg-white/88">
-                <Link href={action.href}>{action.label}</Link>
+    <div className="grid gap-5 xl:grid-cols-[1fr_280px]">
+      <div className="space-y-5">
+        <Card className="grid min-h-[260px] gap-5 overflow-hidden p-0 md:grid-cols-[1fr_260px]">
+          <div className="p-6">
+            <Badge className="bg-secondary/35 text-primary">Challenge van vandaag</Badge>
+            <h2 className="mt-5 max-w-md font-serif text-3xl font-extrabold leading-tight">Wall sit tijdens het tanden poetsen</h2>
+            <p className="mt-3 max-w-md text-sm font-medium leading-6 text-muted">{data.quote}</p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Button asChild>
+                <Link href="/workouts">Start challenge</Link>
               </Button>
-            ))}
-          </div>
-        </Card>
-
-        <Card className={bmiTone[data.bmi.category] ?? "bg-card"}>
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-sm font-black uppercase tracking-[0.18em] opacity-75">BMI</p>
-              <CardTitle className="mt-3 text-5xl">{data.bmi.bmi || "--"}</CardTitle>
+              <Button asChild variant="outline">
+                <Link href="/progress">Log gewicht</Link>
+              </Button>
             </div>
-            <Activity />
           </div>
-          <div className="mt-5 grid gap-3">
-            <Badge className="w-fit bg-white/70 text-foreground">{data.bmi.category}</Badge>
-            <p className="text-sm font-bold">Healthy range: {data.bmi.healthyRange}</p>
-            <p className="text-sm font-bold">Days until target: {data.bmi.daysUntilTarget}</p>
-            <ProgressBar value={data.bmi.progressPercentage} />
+          <WorkoutIllustration />
+        </Card>
+
+        <section>
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-sm font-extrabold">Jouw vooruitgang</h2>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/progress">Bekijk alles <ChevronRight size={15} /></Link>
+            </Button>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <SmallMetric title="Workouts" value={`${data.currentStreak}`} suffix="streak" icon={<CalendarDays size={18} />} />
+            <SmallMetric title="Voeding" value={`${data.calories.total}`} suffix="kcal" icon={<HeartPulse size={18} />} />
+            <SmallMetric title="Gewicht" value={`${data.weightProgress.difference > 0 ? "+" : ""}${data.weightProgress.difference}`} suffix="kg" icon={<TrendIcon size={18} />} />
+            <SmallMetric title="Level" value={`${data.level.level}`} suffix={`${data.level.xp} XP`} icon={<Trophy size={18} />} progress={data.level.progressToNextLevel} />
+          </div>
+        </section>
+
+        <section className="grid gap-5 lg:grid-cols-[.95fr_1.05fr]">
+          <Card>
+            <div className="mb-5 flex items-center justify-between">
+              <CardTitle className="text-xl">BMI</CardTitle>
+              <Badge className={bmiTone[data.bmi.category] ?? "bg-secondary/30"}>{data.bmi.bmi ? data.bmi.category : "Vul lengte in"}</Badge>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-[130px_1fr]">
+              <div className="grid h-32 w-32 place-items-center rounded-full border-[10px] border-secondary/45 bg-background">
+                <div className="text-center">
+                  <p className="text-3xl font-black">{data.bmi.bmi || "--"}</p>
+                  <p className="text-xs font-bold text-muted">BMI</p>
+                </div>
+              </div>
+              <div className="grid content-center gap-3">
+                <InfoRow label="Huidig gewicht" value={`${data.weightProgress.currentWeight || 0} kg`} />
+                <InfoRow label="Gezonde range" value={data.bmi.healthyRange} />
+                <InfoRow label="Doel bereikt over" value={`${data.bmi.daysUntilTarget} dagen`} />
+                <ProgressBar value={data.bmi.progressPercentage} />
+              </div>
+            </div>
+          </Card>
+
+          <Card>
+            <div className="mb-5 flex items-center justify-between">
+              <CardTitle className="text-xl">Gewicht trend</CardTitle>
+              <Activity className="text-primary" />
+            </div>
+            <MiniWeightChart data={data.weightHistory} />
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <InfoTile label="Start" value={`${data.weightProgress.startingWeight || 0} kg`} />
+              <InfoTile label="Nu" value={`${data.weightProgress.currentWeight || 0} kg`} />
+            </div>
+          </Card>
+        </section>
+      </div>
+
+      <aside className="space-y-5">
+        <Card className="p-5">
+          <p className="text-sm font-extrabold">Jouw streak</p>
+          <div className="mt-4 flex items-center justify-between">
+            <div>
+              <p className="text-4xl font-black">{data.currentStreak}</p>
+              <p className="text-xs font-bold text-muted">dagen op rij</p>
+            </div>
+            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-secondary/35 text-primary">
+              <Flame />
+            </div>
           </div>
         </Card>
-      </section>
 
-      <section className="grid gap-6 lg:grid-cols-[.9fr_1.1fr]">
+        <Card>
+          <p className="text-sm font-extrabold">Calories</p>
+          <div className="mt-4 space-y-3">
+            <InfoRow label="Vandaag" value={`${data.calories.today} kcal`} />
+            <InfoRow label="Week" value={`${data.calories.week} kcal`} />
+            <InfoRow label="Maand" value={`${data.calories.month} kcal`} />
+            <InfoRow label="Totaal" value={`${data.calories.total} kcal`} />
+          </div>
+        </Card>
+
         <Card>
           <div className="mb-4 flex items-center justify-between">
-            <CardTitle>Achievements</CardTitle>
-            <Badge>Real progress</Badge>
+            <p className="text-sm font-extrabold">Achievements</p>
+            <Sparkles size={17} className="text-primary" />
           </div>
-          {data.achievements.length === 0 || data.empty.achievements ? (
-            <p className="rounded-2xl bg-secondary/25 p-4 text-sm font-semibold text-muted">No achievements yet. Complete a workout, log meals, or build a streak to unlock your first badge.</p>
+          {data.empty.achievements ? (
+            <p className="rounded-2xl bg-secondary/20 p-3 text-sm font-semibold text-muted">Start met workouts en logs om badges te ontgrendelen.</p>
           ) : (
             <div className="space-y-4">
-              {data.achievements.map((item) => (
+              {data.achievements.slice(0, 4).map((item) => (
                 <div key={item.code}>
-                  <div className="mb-2 flex items-center justify-between text-sm font-bold">
-                    <span className="inline-flex items-center gap-2"><Sparkles size={17} className="text-primary" />{item.title}</span>
+                  <div className="mb-2 flex justify-between text-xs font-bold">
+                    <span>{item.title}</span>
                     <span>{item.progress}%</span>
                   </div>
                   <ProgressBar value={item.progress} />
@@ -133,57 +186,104 @@ function DashboardContent({ data }: { data: DashboardData }) {
             </div>
           )}
         </Card>
-        <Card>
-          <div className="mb-4 flex items-center justify-between">
-            <CardTitle>Progress details</CardTitle>
-            <Button variant="ghost" asChild><Link href="/progress">Open <ArrowRight size={16} /></Link></Button>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Detail label="Starting weight" value={`${data.weightProgress.startingWeight || 0} kg`} icon={<Scale />} />
-            <Detail label="Current weight" value={`${data.weightProgress.currentWeight || 0} kg`} icon={<Scale />} />
-            <Detail label="Workout frequency" value={`${data.currentStreak} streak`} icon={<CalendarDays />} />
-            <Detail label="Total calories" value={`${data.calories.total} kcal`} icon={<Flame />} />
-          </div>
-          <div className="mt-5 rounded-2xl bg-secondary/20 p-4">
-            <p className="text-sm font-bold text-muted">Chart source</p>
-            <p className="mt-1 font-semibold">{data.weightHistory.length} weight log entries synced from Supabase.</p>
+
+        <Card className="bg-secondary/20">
+          <p className="text-sm font-extrabold">Quick actions</p>
+          <div className="mt-4 grid gap-2">
+            {data.quickActions.map((action) => (
+              <Button key={action.href} asChild variant="secondary" className="justify-between bg-card">
+                <Link href={action.href}>{action.label}<ArrowRight size={15} /></Link>
+              </Button>
+            ))}
           </div>
         </Card>
-      </section>
-    </>
+      </aside>
+    </div>
   );
 }
 
-function LiveMetric({ title, value, suffix, icon, hint, progress }: { title: string; value: string; suffix: string; icon: React.ReactNode; hint: string; progress?: number }) {
+function WorkoutIllustration() {
   return (
-    <Card className="hover:-translate-y-1">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-sm font-bold text-muted">{title}</p>
-          <p className="mt-2 text-3xl font-black">{value} <span className="text-sm text-muted">{suffix}</span></p>
-        </div>
-        <div className="rounded-2xl bg-secondary/45 p-3 text-primary">{icon}</div>
+    <div className="relative min-h-[230px] bg-gradient-to-br from-[#fff2f5] to-[#f9d9e2]">
+      <div className="absolute bottom-8 left-1/2 h-2 w-36 -translate-x-1/2 rounded-full bg-primary/12" />
+      <div className="absolute bottom-11 left-1/2 h-24 w-20 -translate-x-1/2 rounded-[28px] bg-[#6f897d]" />
+      <div className="absolute bottom-32 left-1/2 h-16 w-12 -translate-x-1/2 rounded-full bg-[#f0b58e]" />
+      <div className="absolute bottom-10 left-[42%] h-24 w-4 rotate-12 rounded-full bg-[#2f2f2f]" />
+      <div className="absolute bottom-10 left-[56%] h-24 w-4 -rotate-12 rounded-full bg-[#2f2f2f]" />
+      <div className="absolute bottom-20 left-[36%] h-4 w-24 rounded-full bg-[#6f897d]" />
+      <div className="absolute bottom-20 right-[21%] h-4 w-20 rounded-full bg-[#6f897d]" />
+      <div className="absolute bottom-7 right-10 h-20 w-24 rounded-[20px] border border-primary/12 bg-white/70" />
+    </div>
+  );
+}
+
+function SmallMetric({ title, value, suffix, icon, progress }: { title: string; value: string; suffix: string; icon: React.ReactNode; progress?: number }) {
+  return (
+    <Card className="p-4">
+      <div className="flex items-center justify-between">
+        <div className="grid h-10 w-10 place-items-center rounded-2xl bg-secondary/25 text-primary">{icon}</div>
+        {typeof progress === "number" && <span className="text-xs font-bold text-muted">{progress}%</span>}
       </div>
-      <p className="mt-4 text-sm font-semibold text-muted">{hint}</p>
-      {typeof progress === "number" && <ProgressBar value={progress} className="mt-3" />}
+      <p className="mt-4 text-xs font-bold text-muted">{title}</p>
+      <p className="mt-1 text-2xl font-black">{value} <span className="text-xs font-bold text-muted">{suffix}</span></p>
+      {typeof progress === "number" && <ProgressBar className="mt-3" value={progress} />}
     </Card>
   );
 }
 
-function Detail({ label, value, icon }: { label: string; value: string; icon: React.ReactNode }) {
+function InfoRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl bg-secondary/25 p-4">
-      <div className="text-primary">{icon}</div>
-      <p className="mt-3 text-sm font-bold text-muted">{label}</p>
-      <p className="mt-1 text-xl font-black">{value}</p>
+    <div className="flex items-center justify-between gap-3 text-sm">
+      <span className="font-semibold text-muted">{label}</span>
+      <span className="font-extrabold">{value}</span>
     </div>
+  );
+}
+
+function InfoTile({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl bg-background p-3">
+      <p className="text-xs font-bold text-muted">{label}</p>
+      <p className="mt-1 text-lg font-black">{value}</p>
+    </div>
+  );
+}
+
+function MiniWeightChart({ data }: { data: Array<{ date: string; weight: number }> }) {
+  const points = data.slice(-8);
+  if (!points.length) {
+    return <div className="grid h-40 place-items-center rounded-2xl border border-dashed border-primary/20 bg-background text-sm font-semibold text-muted">Nog geen metingen</div>;
+  }
+
+  const weights = points.map((point) => point.weight);
+  const min = Math.min(...weights);
+  const max = Math.max(...weights);
+  const range = Math.max(1, max - min);
+  const polyline = points
+    .map((point, index) => {
+      const x = points.length === 1 ? 10 : 10 + (index / (points.length - 1)) * 80;
+      const y = 85 - ((point.weight - min) / range) * 65;
+      return `${x},${y}`;
+    })
+    .join(" ");
+
+  return (
+    <svg viewBox="0 0 100 100" className="h-40 w-full overflow-visible rounded-2xl bg-background">
+      <polyline points={polyline} fill="none" stroke="#F87AA2" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+      {points.map((point, index) => {
+        const x = points.length === 1 ? 10 : 10 + (index / (points.length - 1)) * 80;
+        const y = 85 - ((point.weight - min) / range) * 65;
+        return <circle key={`${point.date}-${index}`} cx={x} cy={y} r="2.5" fill="#F87AA2" />;
+      })}
+    </svg>
   );
 }
 
 function DashboardSkeleton() {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      {Array.from({ length: 4 }, (_, index) => <Card key={index} className="h-36 animate-pulse" />)}
+    <div className="grid gap-5 xl:grid-cols-[1fr_280px]">
+      <Card className="h-[260px] animate-pulse" />
+      <Card className="h-[260px] animate-pulse" />
     </div>
   );
 }

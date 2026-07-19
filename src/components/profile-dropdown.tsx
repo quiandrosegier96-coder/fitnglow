@@ -17,8 +17,8 @@ export function ProfileDropdown() {
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
-        <Button className="hidden sm:inline-flex" variant="outline">
-          <Avatar name="Joyce" className="h-7 w-7" /> Profile
+        <Button size="icon" variant="ghost" aria-label="Profile">
+          <Avatar name="Joyce" className="h-9 w-9" />
         </Button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>
