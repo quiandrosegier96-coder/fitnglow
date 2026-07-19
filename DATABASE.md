@@ -6,6 +6,7 @@ The foundation migration is:
 supabase/migrations/20260714220000_initial_project_foundation.sql
 supabase/migrations/20260714223000_workout_module.sql
 supabase/migrations/20260719090000_onboarding_body_profile.sql
+supabase/migrations/20260719103000_dynamic_dashboard.sql
 ```
 
 ## Tables
@@ -44,6 +45,8 @@ supabase/migrations/20260719090000_onboarding_body_profile.sql
 - `weight_history`
 - `water_logs`
 - `meal_logs`
+- `motivational_quotes`
+- `user_xp_events`
 
 ## Security
 

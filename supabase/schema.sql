@@ -6,3 +6,5 @@
 -- supabase/migrations/20260714223000_workout_module.sql
 -- Onboarding and body profile migration:
 -- supabase/migrations/20260719090000_onboarding_body_profile.sql
+-- Dynamic dashboard migration:
+-- supabase/migrations/20260719103000_dynamic_dashboard.sql
