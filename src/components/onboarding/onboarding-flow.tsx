@@ -15,6 +15,7 @@ import { Card, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/components/ui/toast";
 
 type OnboardingValues = {
   firstName: string;
@@ -106,6 +107,7 @@ const defaults: OnboardingValues = {
 
 export function OnboardingFlow() {
   const router = useRouter();
+  const { toast } = useToast();
   const [step, setStep] = useState(1);
   const [values, setValues] = useState<OnboardingValues>(defaults);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -153,13 +155,27 @@ export function OnboardingFlow() {
     setSaved(false);
     const payload = { ...values, onboardingStep: nextStep, onboardingCompleted: completed };
     window.localStorage.setItem(storageKey, JSON.stringify(payload));
-    await fetch("/api/onboarding", {
+    const response = await fetch("/api/onboarding", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
       body: JSON.stringify(payload)
-    }).catch(() => undefined);
+    }).catch(() => null);
     setSaving(false);
+
+    if (!response) {
+      toast({ title: "Niet opgeslagen", description: "Geen verbinding met de server. Probeer opnieuw." });
+      return false;
+    }
+
+    if (!response.ok) {
+      const errorPayload = await response.json().catch(() => ({ error: "Body Profile kon niet opgeslagen worden." }));
+      toast({ title: "Body Profile niet opgeslagen", description: errorPayload.error ?? "Controleer je gegevens en probeer opnieuw." });
+      return false;
+    }
+
     setSaved(true);
+    return true;
   }
 
   async function next() {
@@ -171,7 +187,8 @@ export function OnboardingFlow() {
     }
     setErrors({});
     const nextStep = Math.min(totalSteps, step + 1);
-    await save(nextStep);
+    const savedSuccessfully = await save(nextStep);
+    if (!savedSuccessfully) return;
     setStep(nextStep);
   }
 
@@ -187,7 +204,8 @@ export function OnboardingFlow() {
       setErrors(Object.fromEntries(result.error.issues.map((issue) => [issue.path.join("."), issue.message])));
       return;
     }
-    await save(totalSteps, true);
+    const savedSuccessfully = await save(totalSteps, true);
+    if (!savedSuccessfully) return;
     window.localStorage.removeItem(storageKey);
     router.push("/welcome");
   }

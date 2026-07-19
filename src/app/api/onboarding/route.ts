@@ -10,6 +10,7 @@ const partialOnboardingSchema = onboardingSchema.partial().extend({
   onboardingStep: z.coerce.number().min(1).max(7).optional(),
   onboardingCompleted: z.boolean().optional()
 });
+const onboardingSetupMessage = "Database setup incomplete: run supabase/sql/fix_onboarding_welcome_flow.sql in the Supabase SQL Editor.";
 
 export async function GET() {
   const supabase = await createClient();
@@ -58,11 +59,13 @@ export async function PATCH(request: NextRequest) {
 
   const payload = partialOnboardingSchema.parse(await request.json());
   const normalized = normalizePayload(payload);
-  await supabase.from("profiles").upsert({
+  const profileResult = await supabase.from("profiles").upsert({
     id: user.id,
     email: user.email,
-    full_name: `${normalized.firstName} ${normalized.lastName}`.trim() || user.email || "Fit & Glow Member"
+    full_name: `${normalized.firstName} ${normalized.lastName}`.trim() || user.email || "Fit & Glow Member",
+    height_cm: normalized.heightCm
   });
+  if (profileResult.error) return onboardingError(profileResult.error);
 
   const writes = [
     supabase.from("body_profiles").upsert({
@@ -126,10 +129,10 @@ export async function PATCH(request: NextRequest) {
 
   const results = await Promise.all(writes);
   const error = results.find((result) => result.error)?.error;
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (error) return onboardingError(error);
 
   if (normalized.onboardingCompleted) {
-    await Promise.all([
+    const completionWrites = await Promise.all([
       supabase.from("measurements").insert({
         user_id: user.id,
         weight_kg: normalized.currentWeightKg,
@@ -144,9 +147,23 @@ export async function PATCH(request: NextRequest) {
         weight_kg: normalized.currentWeightKg
       })
     ]);
+    const completionError = completionWrites.find((result) => result.error)?.error;
+    if (completionError) return onboardingError(completionError);
   }
 
   return NextResponse.json({ saved: true, dashboard: dashboardFromProfile(normalized) });
+}
+
+function onboardingError(error: { code?: string; message?: string }) {
+  if (isDatabaseSetupError(error)) {
+    return NextResponse.json({ error: onboardingSetupMessage }, { status: 503 });
+  }
+  return NextResponse.json({ error: error.message ?? "Body Profile could not be saved." }, { status: 400 });
+}
+
+function isDatabaseSetupError(error: { code?: string; message?: string }) {
+  const message = error.message?.toLowerCase() ?? "";
+  return ["42P01", "42703", "PGRST205"].includes(error.code ?? "") || message.includes("schema cache") || message.includes("does not exist");
 }
 
 function normalizePayload(payload: Partial<z.infer<typeof onboardingSchema>>) {
