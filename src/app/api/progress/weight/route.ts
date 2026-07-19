@@ -8,7 +8,7 @@ export async function GET() {
   const supabase = await createClient();
   if (!supabase) return NextResponse.json({ logs: [] });
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!user) return NextResponse.json({ error: "Login required to load weight history." }, { status: 401 });
   const logs = await new UserMetricsService(supabase).getWeightHistory(user.id);
   return NextResponse.json({ logs: logs.map((row) => ({ weightKg: row.weight_kg, loggedAt: row.logged_at })) });
 }
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
   const supabase = await createClient();
   if (!supabase) return NextResponse.json({ error: "Supabase is not configured" }, { status: 503 });
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!user) return NextResponse.json({ error: "Login required to save weight." }, { status: 401 });
 
   const payload = validateBody(weightLogSchema, await request.json());
   const { data, error } = await supabase
