@@ -7,6 +7,7 @@ supabase/migrations/20260714220000_initial_project_foundation.sql
 supabase/migrations/20260714223000_workout_module.sql
 supabase/migrations/20260719090000_onboarding_body_profile.sql
 supabase/migrations/20260719103000_dynamic_dashboard.sql
+supabase/migrations/20260719113000_weight_logs_source_of_truth.sql
 ```
 
 ## Tables
@@ -47,6 +48,8 @@ supabase/migrations/20260719103000_dynamic_dashboard.sql
 - `meal_logs`
 - `motivational_quotes`
 - `user_xp_events`
+
+Runtime source of truth for current weight is `weight_logs`. `weight_history` is legacy historical schema and should not be used by application code for current metrics.
 
 ## Security
 

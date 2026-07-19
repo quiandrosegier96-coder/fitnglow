@@ -19,6 +19,7 @@ type DashboardData = {
   level: { level: number; xp: number; nextLevelXp: number; progressToNextLevel: number };
   quote: string;
   achievements: Array<{ code: string; title: string; progress: number; unlocked: boolean }>;
+  weightHistory: Array<{ date: string; weight: number }>;
   quickActions: Array<{ href: string; label: string }>;
   empty: { workouts: boolean; achievements: boolean; weight: boolean };
 };
@@ -47,7 +48,7 @@ export function DynamicDashboard() {
     const channel = supabase
       .channel("dashboard-realtime")
       .on("postgres_changes", { event: "*", schema: "public", table: "completed_workouts" }, () => query.refetch())
-      .on("postgres_changes", { event: "*", schema: "public", table: "weight_history" }, () => query.refetch())
+      .on("postgres_changes", { event: "*", schema: "public", table: "weight_logs" }, () => query.refetch())
       .on("postgres_changes", { event: "*", schema: "public", table: "meal_logs" }, () => query.refetch())
       .on("postgres_changes", { event: "*", schema: "public", table: "water_logs" }, () => query.refetch())
       .on("postgres_changes", { event: "*", schema: "public", table: "achievements" }, () => query.refetch())
@@ -142,6 +143,10 @@ function DashboardContent({ data }: { data: DashboardData }) {
             <Detail label="Current weight" value={`${data.weightProgress.currentWeight || 0} kg`} icon={<Scale />} />
             <Detail label="Workout frequency" value={`${data.currentStreak} streak`} icon={<CalendarDays />} />
             <Detail label="Total calories" value={`${data.calories.total} kcal`} icon={<Flame />} />
+          </div>
+          <div className="mt-5 rounded-2xl bg-secondary/20 p-4">
+            <p className="text-sm font-bold text-muted">Chart source</p>
+            <p className="mt-1 font-semibold">{data.weightHistory.length} weight log entries synced from Supabase.</p>
           </div>
         </Card>
       </section>

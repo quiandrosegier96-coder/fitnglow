@@ -13,10 +13,8 @@ export type WeightRow = {
 
 export type BodyProfileRow = {
   height_cm: number | null;
-  current_weight_kg: number | null;
+  latestWeightKg: number | null;
   target_weight_kg: number | null;
-  bmi?: number | null;
-  bmi_category?: string | null;
 };
 
 export function startOfDay(date = new Date()) {
@@ -60,8 +58,8 @@ export function calculateCurrentStreak(rows: CompletedWorkoutRow[], today = new 
 
 export function calculateWeightProgress(weights: WeightRow[], bodyProfile: BodyProfileRow | null) {
   const sorted = [...weights].sort((a, b) => new Date(a.logged_at).getTime() - new Date(b.logged_at).getTime());
-  const startingWeight = sorted[0]?.weight_kg ?? bodyProfile?.current_weight_kg ?? 0;
-  const currentWeight = sorted[sorted.length - 1]?.weight_kg ?? bodyProfile?.current_weight_kg ?? startingWeight;
+  const startingWeight = sorted[0]?.weight_kg ?? bodyProfile?.latestWeightKg ?? 0;
+  const currentWeight = sorted[sorted.length - 1]?.weight_kg ?? bodyProfile?.latestWeightKg ?? startingWeight;
   const difference = Number((currentWeight - startingWeight).toFixed(1));
   const trend = difference < -0.2 ? "Losing weight" : difference > 0.2 ? "Gaining weight" : "Stable";
   const trendDirection = difference < -0.2 ? "down" : difference > 0.2 ? "up" : "stable";
@@ -95,7 +93,7 @@ export function calculateXp({
 
 export function calculateBmiDashboard(bodyProfile: BodyProfileRow | null) {
   const height = Number(bodyProfile?.height_cm ?? 0);
-  const weight = Number(bodyProfile?.current_weight_kg ?? 0);
+  const weight = Number(bodyProfile?.latestWeightKg ?? 0);
   const target = Number(bodyProfile?.target_weight_kg ?? 0);
   const bmi = calculateBmi(weight, height);
   const healthy = getHealthyWeightRange(height);

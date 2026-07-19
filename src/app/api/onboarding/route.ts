@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { assertCsrf, rateLimit } from "@/lib/security";
 import { onboardingSchema } from "@/lib/schemas";
-import { calculateAge, calculateBmi, estimateDaysUntilTarget, getBmiCategory, getGoalProgress, getHealthyWeightRange, getWeightDifference } from "@/lib/body-profile";
+import { calculateAge, calculateBmi, estimateDaysUntilTarget, getBmiCategory, getGoalProgress, getHealthyWeightRange } from "@/lib/body-profile";
 import { createClient } from "@/lib/supabase/server";
+import { UserMetricsService } from "@/lib/user-metrics-service";
 
 const partialOnboardingSchema = onboardingSchema.partial().extend({
   onboardingStep: z.coerce.number().min(1).max(7).optional(),
@@ -31,12 +32,14 @@ export async function GET() {
   ]);
 
   if (body.error && body.error.code !== "PGRST116") return NextResponse.json({ profile: null });
+  const latestWeight = await new UserMetricsService(supabase).getCurrentUserWeight(user.id);
   const profile = body.data ? fromDatabase({
     body: body.data,
     fitness: fitness.data,
     nutrition: nutrition.data,
     lifestyle: lifestyle.data,
-    goal: goal.data
+    goal: goal.data,
+    latestWeightKg: latestWeight?.weightKg
   }) : null;
 
   return NextResponse.json({ profile, dashboard: profile ? dashboardFromProfile(profile) : null });
@@ -72,17 +75,13 @@ export async function PATCH(request: NextRequest) {
       country: normalized.country,
       preferred_language: normalized.preferredLanguage,
       height_cm: normalized.heightCm,
-      current_weight_kg: normalized.currentWeightKg,
       target_weight_kg: normalized.targetWeightKg,
       waist_cm: normalized.waistCm,
       chest_cm: normalized.chestCm,
       hip_cm: normalized.hipCm,
       body_fat_percentage: normalized.bodyFatPercentage,
-      bmi: calculateBmi(normalized.currentWeightKg, normalized.heightCm),
-      bmi_category: getBmiCategory(calculateBmi(normalized.currentWeightKg, normalized.heightCm)),
       healthy_weight_min_kg: getHealthyWeightRange(normalized.heightCm).min,
       healthy_weight_max_kg: getHealthyWeightRange(normalized.heightCm).max,
-      weight_difference_to_goal_kg: getWeightDifference(normalized.currentWeightKg, normalized.targetWeightKg),
       onboarding_step: normalized.onboardingStep,
       onboarding_completed: normalized.onboardingCompleted
     }),
@@ -140,7 +139,7 @@ export async function PATCH(request: NextRequest) {
         body_fat_percentage: normalized.bodyFatPercentage,
         bmi: calculateBmi(normalized.currentWeightKg, normalized.heightCm)
       }),
-      supabase.from("weight_history").insert({
+      supabase.from("weight_logs").insert({
         user_id: user.id,
         weight_kg: normalized.currentWeightKg
       })
@@ -202,13 +201,15 @@ function fromDatabase({
   fitness,
   nutrition,
   lifestyle,
-  goal
+  goal,
+  latestWeightKg
 }: {
   body: DatabaseProfileRow;
   fitness: DatabaseProfileRow | null;
   nutrition: DatabaseProfileRow | null;
   lifestyle: DatabaseProfileRow | null;
   goal: DatabaseProfileRow | null;
+  latestWeightKg?: number;
 }) {
   const payload = {
     firstName: stringValue(body.first_name),
@@ -218,7 +219,7 @@ function fromDatabase({
     country: stringValue(body.country),
     preferredLanguage: stringValue(body.preferred_language),
     heightCm: numberValue(body.height_cm),
-    currentWeightKg: numberValue(body.current_weight_kg),
+    currentWeightKg: latestWeightKg,
     targetWeightKg: numberValue(body.target_weight_kg),
     waistCm: numberValue(body.waist_cm),
     chestCm: numberValue(body.chest_cm),

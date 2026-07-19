@@ -17,10 +17,15 @@ export const registerSchema = authSchema
   });
 
 export const progressSchema = z.object({
-  weight: z.coerce.number().positive(),
+  weight: z.coerce.number().min(25, "Weight must be at least 25 kg").max(350, "Weight must be below 350 kg"),
   bodyFat: z.coerce.number().min(0).max(80).optional(),
   waist: z.coerce.number().positive().optional(),
   note: z.string().max(400).optional()
+});
+
+export const weightLogSchema = z.object({
+  weightKg: z.coerce.number().min(25, "Weight must be at least 25 kg").max(350, "Weight must be below 350 kg"),
+  loggedAt: z.string().datetime().optional()
 });
 
 export const workoutQuerySchema = z.object({
@@ -72,7 +77,7 @@ export const personalInformationSchema = z.object({
 });
 
 export const bodyProfileSchema = z.object({
-  heightCm: z.coerce.number().min(120, "Enter height in cm").max(230),
+  heightCm: z.coerce.number().min(80, "Height must be at least 80 cm").max(250, "Height must be below 250 cm"),
   currentWeightKg: z.coerce.number().min(35, "Enter current weight").max(250),
   targetWeightKg: z.coerce.number().min(35, "Enter target weight").max(250),
   waistCm: z.coerce.number().min(40).max(200),

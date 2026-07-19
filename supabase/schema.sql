@@ -8,3 +8,5 @@
 -- supabase/migrations/20260719090000_onboarding_body_profile.sql
 -- Dynamic dashboard migration:
 -- supabase/migrations/20260719103000_dynamic_dashboard.sql
+-- Weight logs source of truth migration:
+-- supabase/migrations/20260719113000_weight_logs_source_of_truth.sql
