@@ -5,9 +5,16 @@ export const authSchema = z.object({
   password: z.string().min(8, "Use at least 8 characters")
 });
 
-export const registerSchema = authSchema.extend({
-  fullName: z.string().min(2, "Enter your full name")
-});
+export const registerSchema = authSchema
+  .extend({
+    fullName: z.string().min(2, "Enter your full name"),
+    confirmPassword: z.string().min(8, "Confirm your password"),
+    acceptTerms: z.boolean().refine((value) => value, "Accept the privacy and membership terms")
+  })
+  .refine((values) => values.password === values.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"]
+  });
 
 export const progressSchema = z.object({
   weight: z.coerce.number().positive(),
