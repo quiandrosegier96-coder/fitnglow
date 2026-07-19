@@ -4,14 +4,22 @@ declare
   deleted_auth_users int;
   table_name text;
 begin
-  select au.id
-  into keep_user_id
-  from auth.users au
-  left join public.profiles p on p.id = au.id
-  where lower(coalesce(p.email, au.email, '')) = 'joyceplysier@outlook.com'
-     or lower(coalesce(p.full_name, '')) = 'joyce plysier'
-  order by case when lower(coalesce(p.email, au.email, '')) = 'joyceplysier@outlook.com' then 0 else 1 end
-  limit 1;
+  if to_regclass('public.profiles') is not null then
+    select au.id
+    into keep_user_id
+    from auth.users au
+    left join public.profiles p on p.id = au.id
+    where lower(coalesce(p.email, au.email, '')) = 'joyceplysier@outlook.com'
+       or lower(coalesce(p.full_name, '')) = 'joyce plysier'
+    order by case when lower(coalesce(p.email, au.email, '')) = 'joyceplysier@outlook.com' then 0 else 1 end
+    limit 1;
+  else
+    select au.id
+    into keep_user_id
+    from auth.users au
+    where lower(coalesce(au.email, '')) = 'joyceplysier@outlook.com'
+    limit 1;
+  end if;
 
   if keep_user_id is null then
     raise exception 'Joyce Plysier was not found by email joyceplysier@outlook.com or full name Joyce Plysier. Nothing was deleted.';
@@ -74,11 +82,15 @@ begin
   raise notice 'Reset complete. Kept Joyce Plysier user_id %, deleted % auth users.', keep_user_id, deleted_auth_users;
 end $$;
 
-select
-  au.id,
-  au.email,
-  p.full_name,
-  p.welcome_completed
-from auth.users au
-left join public.profiles p on p.id = au.id
-order by au.created_at desc;
+do $$
+begin
+  if to_regclass('public.profiles') is not null then
+    raise notice 'Remaining users:';
+  else
+    raise notice 'Remaining users. public.profiles does not exist in this Supabase project.';
+  end if;
+end $$;
+
+select id, email, created_at
+from auth.users
+order by created_at desc;
