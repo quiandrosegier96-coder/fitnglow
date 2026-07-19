@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Apple, Chrome, Loader2, LockKeyhole, Mail, Sparkles, UserRound } from "lucide-react";
+import { Apple, Chrome, Eye, EyeOff, Loader2, LockKeyhole, Mail, Sparkles, UserRound } from "lucide-react";
 import { useForm } from "react-hook-form";
 import type { Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,6 +24,8 @@ export function AuthForm({ mode }: { mode: "login" | "register" | "forgot" }) {
   const searchParams = useSearchParams();
   const [message, setMessage] = useState<string>();
   const [remember, setRemember] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || (typeof window !== "undefined" ? window.location.origin : "");
 
   async function onSubmit(values: Values) {
@@ -99,12 +101,24 @@ export function AuthForm({ mode }: { mode: "login" | "register" | "forgot" }) {
         </Field>
         {mode !== "forgot" && (
           <Field label="Password" icon={<LockKeyhole size={17} />}>
-            <Input autoComplete={mode === "login" ? "current-password" : "new-password"} placeholder="Minimum 8 characters" type="password" {...register("password")} />
+            <PasswordInput
+              autoComplete={mode === "login" ? "current-password" : "new-password"}
+              placeholder="Minimum 8 characters"
+              visible={showPassword}
+              onToggle={() => setShowPassword((value) => !value)}
+              {...register("password")}
+            />
           </Field>
         )}
         {mode === "register" && (
           <Field label="Confirm password" icon={<LockKeyhole size={17} />}>
-            <Input autoComplete="new-password" placeholder="Repeat your password" type="password" {...register("confirmPassword")} />
+            <PasswordInput
+              autoComplete="new-password"
+              placeholder="Repeat your password"
+              visible={showConfirmPassword}
+              onToggle={() => setShowConfirmPassword((value) => !value)}
+              {...register("confirmPassword")}
+            />
           </Field>
         )}
         {mode === "login" && (
@@ -157,5 +171,28 @@ function Field({ label, icon, children }: { label: string; icon: React.ReactNode
       </span>
       {children}
     </label>
+  );
+}
+
+function PasswordInput({
+  visible,
+  onToggle,
+  ...props
+}: React.InputHTMLAttributes<HTMLInputElement> & {
+  visible: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <div className="relative">
+      <Input className="pr-12" type={visible ? "text" : "password"} {...props} />
+      <button
+        aria-label={visible ? "Hide password" : "Show password"}
+        className="absolute right-3 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full text-muted hover:bg-secondary/45 hover:text-foreground"
+        onClick={onToggle}
+        type="button"
+      >
+        {visible ? <EyeOff size={18} /> : <Eye size={18} />}
+      </button>
+    </div>
   );
 }
