@@ -122,7 +122,14 @@ export function OnboardingFlow() {
       setStep(parsed.onboardingStep ?? 1);
     }
     fetch("/api/onboarding")
-      .then((response) => response.ok ? response.json() : null)
+      .then((response) => {
+        if (response.status === 401) {
+          window.localStorage.removeItem(storageKey);
+          router.push("/login?redirectedFrom=/onboarding");
+          return null;
+        }
+        return response.ok ? response.json() : null;
+      })
       .then((payload) => {
         if (payload?.profile) {
           setValues({ ...defaults, ...payload.profile });
@@ -130,7 +137,7 @@ export function OnboardingFlow() {
         }
       })
       .catch(() => undefined);
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     window.localStorage.setItem(storageKey, JSON.stringify({ ...values, onboardingStep: step }));
@@ -165,6 +172,13 @@ export function OnboardingFlow() {
 
     if (!response) {
       toast({ title: "Niet opgeslagen", description: "Geen verbinding met de server. Probeer opnieuw." });
+      return false;
+    }
+
+    if (response.status === 401) {
+      window.localStorage.removeItem(storageKey);
+      toast({ title: "Login nodig", description: "Log opnieuw in om je Body Profile veilig op te slaan." });
+      router.push("/login?redirectedFrom=/onboarding");
       return false;
     }
 

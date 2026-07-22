@@ -16,7 +16,7 @@ export async function GET() {
   const supabase = await createClient();
   if (!supabase) return NextResponse.json({ profile: null });
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!user) return NextResponse.json({ error: "Login required to load Body Profile." }, { status: 401 });
 
   const [
     body,
@@ -55,7 +55,7 @@ export async function PATCH(request: NextRequest) {
   const supabase = await createClient();
   if (!supabase) return NextResponse.json({ saved: false, reason: "Supabase is not configured" }, { status: 503 });
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!user) return NextResponse.json({ error: "Login required to save Body Profile." }, { status: 401 });
 
   const payload = partialOnboardingSchema.parse(await request.json());
   const normalized = normalizePayload(payload);
