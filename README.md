@@ -28,4 +28,22 @@ Copy `.env.example` to `.env.local` and set:
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+STRAVA_CLIENT_ID=
+STRAVA_CLIENT_SECRET=
+```
+
+## Strava
+
+Create a Strava app at `https://www.strava.com/settings/api`.
+
+Use this local callback:
+
+```text
+http://127.0.0.1:3000/api/strava/callback
+```
+
+Use this production callback:
+
+```text
+https://fitandglow.netlify.app/api/strava/callback
 ```

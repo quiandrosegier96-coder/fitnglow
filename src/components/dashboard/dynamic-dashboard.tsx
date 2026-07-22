@@ -48,6 +48,7 @@ export function DynamicDashboard() {
     const channel = supabase
       .channel("dashboard-realtime")
       .on("postgres_changes", { event: "*", schema: "public", table: "completed_workouts" }, () => query.refetch())
+      .on("postgres_changes", { event: "*", schema: "public", table: "strava_activities" }, () => query.refetch())
       .on("postgres_changes", { event: "*", schema: "public", table: "weight_logs" }, () => query.refetch())
       .on("postgres_changes", { event: "*", schema: "public", table: "meal_logs" }, () => query.refetch())
       .on("postgres_changes", { event: "*", schema: "public", table: "water_logs" }, () => query.refetch())

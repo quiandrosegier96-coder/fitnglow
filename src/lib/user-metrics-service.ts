@@ -78,10 +78,11 @@ export class UserMetricsService {
   }
 
   async getDashboardMetrics(userId: string) {
-    const [bodyProfile, completedWorkouts, weightLogs, mealLogs, waterLogs, userAchievements, quoteRows] =
+    const [bodyProfile, completedWorkouts, stravaActivities, weightLogs, mealLogs, waterLogs, userAchievements, quoteRows] =
       await Promise.all([
         this.getBodyProfile(userId),
         this.supabase.from("completed_workouts").select("calories,completed_at,completion_percentage").eq("user_id", userId).order("completed_at", { ascending: false }),
+        this.supabase.from("strava_activities").select("calories,start_date").eq("user_id", userId).order("start_date", { ascending: false }),
         this.getWeightHistory(userId),
         this.supabase.from("meal_logs").select("id,logged_at").eq("user_id", userId),
         this.supabase.from("water_logs").select("logged_at").eq("user_id", userId),
@@ -94,6 +95,14 @@ export class UserMetricsService {
       completed_at: row.completed_at,
       completion_percentage: row.completion_percentage
     }));
+    const stravaWorkouts = stravaActivities.error
+      ? []
+      : ((stravaActivities.data ?? []) as Array<{ calories: number | null; start_date: string }>).map((row) => ({
+          calories: Number(row.calories ?? 0),
+          completed_at: row.start_date,
+          completion_percentage: 100
+        }));
+    const allActivityRows = [...workouts, ...stravaWorkouts];
     const meals = mealLogs.data ?? [];
     const water = waterLogs.data ?? [];
     const currentWeight = weightLogs.at(-1)?.weight_kg ?? 0;
@@ -102,12 +111,12 @@ export class UserMetricsService {
       target_weight_kg: bodyProfile?.target_weight_kg ?? null,
       latestWeightKg: currentWeight || null
     };
-    const currentStreak = calculateCurrentStreak(workouts);
+    const currentStreak = calculateCurrentStreak(allActivityRows);
     const weightProgress = calculateWeightProgress(weightLogs, metricsProfile);
     const bmi = calculateBmiDashboard(metricsProfile);
     const unlockedAchievements = userAchievements.data?.length ?? 0;
     const xp = calculateXp({
-      workouts: workouts.length,
+      workouts: allActivityRows.length,
       weightLogs: weightLogs.length,
       mealLogs: meals.length,
       achievements: unlockedAchievements,
@@ -116,7 +125,7 @@ export class UserMetricsService {
     const level = calculateLevel(xp);
     const waterDays = new Set(water.map((row) => new Date(String(row.logged_at)).toISOString().slice(0, 10))).size;
     const achievements = achievementProgress({
-      workoutCount: workouts.length,
+      workoutCount: allActivityRows.length,
       streak: currentStreak,
       weightLost: Math.max(0, -weightProgress.difference),
       mealCount: meals.length,
@@ -128,17 +137,17 @@ export class UserMetricsService {
       user_id: userId,
       current_count: currentStreak,
       longest_count: currentStreak,
-      last_completed_on: workouts[0]?.completed_at ? new Date(workouts[0].completed_at).toISOString().slice(0, 10) : null
+      last_completed_on: allActivityRows[0]?.completed_at ? new Date(allActivityRows[0].completed_at).toISOString().slice(0, 10) : null
     });
 
     return {
       currentWeight,
       currentStreak,
       calories: {
-        today: sumCalories(workouts, startOfDay()),
-        week: sumCalories(workouts, startOfWeek()),
-        month: sumCalories(workouts, startOfMonth()),
-        total: sumCalories(workouts)
+        today: sumCalories(allActivityRows, startOfDay()),
+        week: sumCalories(allActivityRows, startOfWeek()),
+        month: sumCalories(allActivityRows, startOfMonth()),
+        total: sumCalories(allActivityRows)
       },
       weightProgress,
       bmi,
@@ -150,7 +159,7 @@ export class UserMetricsService {
         weight: row.weight_kg
       })),
       empty: {
-        workouts: workouts.length === 0,
+        workouts: allActivityRows.length === 0,
         achievements: achievements.every((item) => !item.unlocked),
         weight: weightLogs.length === 0
       }

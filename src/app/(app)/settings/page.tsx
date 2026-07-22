@@ -1,8 +1,11 @@
+import { Suspense } from "react";
 import { Bell, Download, Languages, Shield, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { StravaConnectCard } from "@/components/settings/strava-connect-card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const settings = [
   { title: "Language", description: "English, Dutch, French, and future app localization.", icon: Languages },
@@ -30,6 +33,9 @@ export default function SettingsPage() {
         </div>
         <ThemeToggle />
       </Card>
+      <Suspense fallback={<Skeleton className="mt-6 h-48 w-full" />}>
+        <StravaConnectCard />
+      </Suspense>
       <div className="mt-6 flex flex-wrap gap-3">
         <Button variant="outline"><Download size={17} /> Export data</Button>
         <Button variant="outline"><Trash2 size={17} /> Delete account</Button>

@@ -28,6 +28,8 @@ Add these in Netlify under **Site configuration > Environment variables**:
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 NEXT_PUBLIC_APP_URL=https://your-netlify-site.netlify.app
+STRAVA_CLIENT_ID=
+STRAVA_CLIENT_SECRET=
 ```
 
 ## Supabase Redirect URLs
@@ -40,3 +42,11 @@ https://your-netlify-site.netlify.app/reset-password
 ```
 
 Also update Google and Apple OAuth redirect settings if those providers are enabled.
+
+## Strava Redirect URL
+
+Add this callback URL in the Strava API app settings:
+
+```text
+https://fitandglow.netlify.app/api/strava/callback
+```
