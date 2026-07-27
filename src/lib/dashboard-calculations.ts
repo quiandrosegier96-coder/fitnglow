@@ -14,6 +14,7 @@ export type WeightRow = {
 export type BodyProfileRow = {
   height_cm: number | null;
   latestWeightKg: number | null;
+  startingWeightKg?: number | null;
   target_weight_kg: number | null;
 };
 
@@ -35,9 +36,10 @@ export function startOfMonth(date = new Date()) {
 }
 
 export function sumCalories(rows: CompletedWorkoutRow[], since?: Date) {
-  return rows
+  const total = rows
     .filter((row) => !since || new Date(row.completed_at) >= since)
     .reduce((sum, row) => sum + Number(row.calories ?? 0), 0);
+  return Math.round(total);
 }
 
 export function calculateCurrentStreak(rows: CompletedWorkoutRow[], today = new Date()) {
@@ -94,6 +96,7 @@ export function calculateXp({
 export function calculateBmiDashboard(bodyProfile: BodyProfileRow | null) {
   const height = Number(bodyProfile?.height_cm ?? 0);
   const weight = Number(bodyProfile?.latestWeightKg ?? 0);
+  const startingWeight = Number(bodyProfile?.startingWeightKg ?? weight);
   const target = Number(bodyProfile?.target_weight_kg ?? 0);
   const bmi = calculateBmi(weight, height);
   const healthy = getHealthyWeightRange(height);
@@ -104,7 +107,7 @@ export function calculateBmiDashboard(bodyProfile: BodyProfileRow | null) {
     healthyRange: healthy.min && healthy.max ? `${healthy.min} - ${healthy.max} kg` : "Complete onboarding",
     targetWeight: target,
     daysUntilTarget: estimateDaysUntilTarget(weight, target),
-    progressPercentage: getGoalProgress(weight, target, weight)
+    progressPercentage: getGoalProgress(weight, target, startingWeight)
   };
 }
 

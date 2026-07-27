@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createPublicUrl } from "@/lib/public-url";
 import { createStravaAuthorizeUrl, getStravaRedirectUri, stravaConfigured } from "@/lib/strava";
+import { ensureUserProfile } from "@/lib/user-profile";
 
 export async function GET(request: NextRequest) {
   if (!stravaConfigured()) {
@@ -8,12 +10,18 @@ export async function GET(request: NextRequest) {
   }
 
   const supabase = await createClient();
-  if (!supabase) return NextResponse.redirect(new URL("/login?redirectedFrom=/settings", request.url));
+  if (!supabase) return NextResponse.redirect(createPublicUrl("/login?redirectedFrom=/settings", request.url));
 
   const {
     data: { user }
   } = await supabase.auth.getUser();
-  if (!user) return NextResponse.redirect(new URL("/login?redirectedFrom=/settings", request.url));
+  if (!user) return NextResponse.redirect(createPublicUrl("/login?redirectedFrom=/settings", request.url));
+
+  try {
+    await ensureUserProfile(supabase, user);
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Profile could not be prepared." }, { status: 400 });
+  }
 
   const state = crypto.randomUUID();
   const { error } = await supabase.from("strava_oauth_states").insert({

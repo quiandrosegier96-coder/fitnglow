@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { getPublicOrigin } from "@/lib/public-url";
 
 const STRAVA_AUTHORIZE_URL = "https://www.strava.com/oauth/authorize";
 const STRAVA_TOKEN_URL = "https://www.strava.com/oauth/token";
@@ -18,6 +19,9 @@ export type StravaActivity = {
   average_heartrate?: number;
   max_heartrate?: number;
   start_date: string;
+  map?: { summary_polyline?: string; polyline?: string };
+  photos?: { primary?: { urls?: Record<string, string> } };
+  photo_urls?: string[];
 };
 
 type TokenResponse = {
@@ -34,7 +38,7 @@ export function stravaConfigured() {
 }
 
 export function getStravaRedirectUri(requestUrl: string) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || new URL(requestUrl).origin;
+  const appUrl = getPublicOrigin(requestUrl);
   return `${appUrl.replace(/\/$/, "")}/api/strava/callback`;
 }
 
@@ -43,8 +47,8 @@ export function createStravaAuthorizeUrl({ state, redirectUri }: { state: string
     client_id: process.env.STRAVA_CLIENT_ID ?? "",
     redirect_uri: redirectUri,
     response_type: "code",
-    approval_prompt: "auto",
-    scope: "read,activity:read,activity:read_all",
+    approval_prompt: "force",
+    scope: "read,activity:read",
     state
   });
   return `${STRAVA_AUTHORIZE_URL}?${params.toString()}`;
@@ -130,7 +134,29 @@ export async function fetchStravaActivities(accessToken: string, after?: number)
   return activities;
 }
 
+export async function fetchStravaActivityDetail(accessToken: string, activityId: number) {
+  const response = await fetch(`${STRAVA_API_URL}/activities/${activityId}?include_all_efforts=false`, {
+    headers: { Authorization: `Bearer ${accessToken}` }
+  });
+  if (!response.ok) throw new Error(await response.text());
+  return response.json() as Promise<StravaActivity>;
+}
+
+export async function fetchStravaActivityPhotos(accessToken: string, activityId: number) {
+  const response = await fetch(`${STRAVA_API_URL}/activities/${activityId}/photos?size=2048&photo_sources=true`, {
+    headers: { Authorization: `Bearer ${accessToken}` }
+  });
+  if (!response.ok) return [];
+  const photos = (await response.json()) as Array<{ urls?: Record<string, string> }>;
+  return photos
+    .map((photo) => photo.urls?.["2048"] ?? photo.urls?.["600"] ?? Object.values(photo.urls ?? {})[0])
+    .filter((url): url is string => Boolean(url));
+}
+
 export function normalizeStravaActivity(userId: string, activity: StravaActivity) {
+  const photoUrls = activity.photos?.primary?.urls;
+  const imageUrl = activity.photo_urls?.[0] ?? photoUrls?.["600"] ?? photoUrls?.["100"] ?? Object.values(photoUrls ?? {})[0] ?? null;
+
   return {
     user_id: userId,
     strava_activity_id: activity.id,
@@ -146,6 +172,8 @@ export function normalizeStravaActivity(userId: string, activity: StravaActivity
     average_heartrate: activity.average_heartrate ?? null,
     max_heartrate: activity.max_heartrate ?? null,
     start_date: activity.start_date,
+    image_url: imageUrl,
+    map_polyline: activity.map?.summary_polyline ?? activity.map?.polyline ?? null,
     raw: activity
   };
 }

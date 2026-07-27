@@ -1,13 +1,55 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { LogOut, Settings, UserRound } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import { getFirstName } from "@/lib/member-name";
 
 export function ProfileDropdown() {
+  const [memberName, setMemberName] = useState("Member");
+  const [memberAvatar, setMemberAvatar] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadMemberName() {
+      const supabase = createClient();
+      if (!supabase) return;
+
+      const {
+        data: { user }
+      } = await supabase.auth.getUser();
+      if (!user || cancelled) return;
+
+      const fallbackName = getFirstName(user.user_metadata?.full_name ?? user.user_metadata?.name ?? user.email ?? "Member");
+      const [bodyProfile, profile] = await Promise.all([
+        supabase.from("body_profiles").select("first_name").eq("user_id", user.id).maybeSingle(),
+        supabase.from("profiles").select("full_name,avatar_url").eq("id", user.id).maybeSingle()
+      ]);
+
+      if (cancelled) return;
+      setMemberName(getFirstName(bodyProfile.data?.first_name || profile.data?.full_name || fallbackName));
+      setMemberAvatar(profile.data?.avatar_url ?? null);
+    }
+
+    loadMemberName();
+    const supabase = createClient();
+    const {
+      data: { subscription }
+    } = supabase?.auth.onAuthStateChange(() => {
+      loadMemberName();
+    }) ?? { data: { subscription: null } };
+
+    return () => {
+      cancelled = true;
+      subscription?.unsubscribe();
+    };
+  }, []);
+
   async function signOut() {
     const supabase = createClient();
     await supabase?.auth.signOut();
@@ -18,7 +60,7 @@ export function ProfileDropdown() {
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
         <Button size="icon" variant="ghost" aria-label="Profile">
-          <Avatar name="Joyce" className="h-9 w-9" />
+          <Avatar src={memberAvatar ?? undefined} name={memberName} className="h-9 w-9" />
         </Button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>

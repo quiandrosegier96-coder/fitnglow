@@ -7,7 +7,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <section className="relative hidden overflow-hidden rounded-[2rem] lg:block">
         <Image
           src="https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1600&q=85"
-          alt="Fit & Glow Club training"
+          alt="Fit & Glow training"
           fill
           priority
           className="object-cover"
@@ -30,7 +30,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <section className="grid place-items-center">
         <div className="w-full max-w-md">
           <div className="mb-8 flex justify-center">
-            <Image src="/logo.svg" alt="Fit & Glow Club" width={210} height={62} priority />
+            <Image src="/logo.svg" alt="Fit & Glow" width={210} height={62} priority />
           </div>
           {children}
         </div>

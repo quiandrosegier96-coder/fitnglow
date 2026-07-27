@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createPublicUrl } from "@/lib/public-url";
 import { exchangeStravaCode, getStravaRedirectUri, stravaConfigured } from "@/lib/strava";
 
 export async function GET(request: NextRequest) {
-  const settingsUrl = new URL("/settings", request.url);
+  const settingsUrl = createPublicUrl("/settings", request.url);
   if (!stravaConfigured()) {
     settingsUrl.searchParams.set("strava", "missing-env");
     return NextResponse.redirect(settingsUrl);
@@ -13,17 +14,17 @@ export async function GET(request: NextRequest) {
   const state = request.nextUrl.searchParams.get("state");
   const error = request.nextUrl.searchParams.get("error");
   if (error || !code || !state) {
-    settingsUrl.searchParams.set("strava", "cancelled");
+    settingsUrl.searchParams.set("strava", error?.includes("limit") ? "athlete-limit" : "cancelled");
     return NextResponse.redirect(settingsUrl);
   }
 
   const supabase = await createClient();
-  if (!supabase) return NextResponse.redirect(new URL("/login?redirectedFrom=/settings", request.url));
+  if (!supabase) return NextResponse.redirect(createPublicUrl("/login?redirectedFrom=/settings", request.url));
 
   const {
     data: { user }
   } = await supabase.auth.getUser();
-  if (!user) return NextResponse.redirect(new URL("/login?redirectedFrom=/settings", request.url));
+  if (!user) return NextResponse.redirect(createPublicUrl("/login?redirectedFrom=/settings", request.url));
 
   const { data: oauthState, error: stateError } = await supabase
     .from("strava_oauth_states")

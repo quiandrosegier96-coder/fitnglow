@@ -5,6 +5,10 @@ import { Card, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 const collections = ["Users", "Roles", "Recipes", "Workouts", "Exercises", "Nutrition plans", "Challenges", "Tips", "Announcements", "Analytics"];
+const collectionLinks: Record<string, string> = {
+  Workouts: "/admin/workouts",
+  Challenges: "/admin/challenges"
+};
 
 export default function AdminPage() {
   return (
@@ -18,8 +22,8 @@ export default function AdminPage() {
       </section>
       <section className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         {collections.map((item) => (
-          <Button key={item} variant="outline" className="justify-start" asChild={item === "Workouts"}>
-            {item === "Workouts" ? <Link href="/admin/workouts">{item}</Link> : <span>{item}</span>}
+          <Button key={item} variant="outline" className="justify-start" asChild={Boolean(collectionLinks[item])}>
+            {collectionLinks[item] ? <Link href={collectionLinks[item]}>{item}</Link> : <span>{item}</span>}
           </Button>
         ))}
       </section>

@@ -15,9 +15,22 @@ export async function GET() {
   if (!supabase) return NextResponse.json({ notifications: [] });
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const { data, error } = await supabase.from("notifications").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-  return NextResponse.json({ notifications: data });
+  const { data, error } = await supabase
+    .from("notifications")
+    .select("id,title,body,kind,notification_type,feed_item_id,feed_item_type,href,read_at,created_at,actor_id")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(80);
+  if (error) {
+    if (isMissingNotificationsTable(error)) {
+      return NextResponse.json({ error: "Database setup incomplete: run supabase/sql/add_timeline_notifications.sql in the Supabase SQL Editor." }, { status: 503 });
+    }
+    return NextResponse.json({ error: error.message }, { status: 400 });
+  }
+  return NextResponse.json({
+    notifications: data ?? [],
+    unreadCount: (data ?? []).filter((notification) => !notification.read_at).length
+  });
 }
 
 export async function POST(request: NextRequest) {
@@ -41,4 +54,33 @@ export async function POST(request: NextRequest) {
   });
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   return NextResponse.json({ ok: true });
+}
+
+export async function PATCH(request: NextRequest) {
+  const limited = rateLimit(request, 60, 60_000);
+  if (limited) return limited;
+  const csrf = assertCsrf(request);
+  if (csrf) return csrf;
+
+  const supabase = await createClient();
+  if (!supabase) return NextResponse.json({ error: "Supabase is not configured" }, { status: 503 });
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const payload = validateBody(z.object({ notificationId: z.string().uuid().optional(), all: z.boolean().optional() }), await request.json());
+  const query = supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("user_id", user.id);
+  const { error } = payload.all ? await query.is("read_at", null) : await query.eq("id", payload.notificationId);
+  if (error) {
+    if (isMissingNotificationsTable(error)) {
+      return NextResponse.json({ error: "Database setup incomplete: run supabase/sql/add_timeline_notifications.sql in the Supabase SQL Editor." }, { status: 503 });
+    }
+    return NextResponse.json({ error: error.message }, { status: 400 });
+  }
+
+  return NextResponse.json({ ok: true });
+}
+
+function isMissingNotificationsTable(error: { code?: string; message?: string }) {
+  const message = error.message?.toLowerCase() ?? "";
+  return error.code === "42P01" || error.code === "PGRST205" || (message.includes("notifications") && message.includes("schema cache"));
 }
