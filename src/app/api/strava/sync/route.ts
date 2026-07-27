@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { assertCsrf, rateLimit } from "@/lib/security";
 import { createClient } from "@/lib/supabase/server";
+<<<<<<< HEAD
 import { ensureFreshStravaConnection, fetchStravaActivities, normalizeStravaActivity, stravaConfigured } from "@/lib/strava";
+=======
+import { ensureFreshStravaConnection, fetchStravaActivities, fetchStravaActivityDetail, fetchStravaActivityPhotos, normalizeStravaActivity, stravaConfigured } from "@/lib/strava";
+>>>>>>> origin/agent/community-challenges-grow-with-jo
 
 export async function POST(request: NextRequest) {
   const limited = rateLimit(request, 12, 60_000);
@@ -31,10 +35,32 @@ export async function POST(request: NextRequest) {
 
   const after = lastActivity?.start_date ? Math.floor(new Date(String(lastActivity.start_date)).getTime() / 1000) - 86_400 : undefined;
   const activities = await fetchStravaActivities(String(connection.access_token), after);
+<<<<<<< HEAD
   if (activities.length) {
     const { error } = await supabase
       .from("strava_activities")
       .upsert(activities.map((activity) => normalizeStravaActivity(user.id, activity)), {
+=======
+  const enrichedActivities = await Promise.all(
+    activities.slice(0, 12).map(async (activity) => {
+      try {
+        const [detail, photoUrls] = await Promise.all([
+          fetchStravaActivityDetail(String(connection.access_token), activity.id),
+          fetchStravaActivityPhotos(String(connection.access_token), activity.id)
+        ]);
+        return { ...detail, photo_urls: photoUrls };
+      } catch {
+        return activity;
+      }
+    })
+  );
+  const allActivities = activities.map((activity) => enrichedActivities.find((item) => item.id === activity.id) ?? activity);
+
+  if (activities.length) {
+    const { error } = await supabase
+      .from("strava_activities")
+      .upsert(allActivities.map((activity) => normalizeStravaActivity(user.id, activity)), {
+>>>>>>> origin/agent/community-challenges-grow-with-jo
         onConflict: "user_id,strava_activity_id"
       });
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });

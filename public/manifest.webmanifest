@@ -1,8 +1,15 @@
 {
+<<<<<<< HEAD
   "name": "Fit & Glow Club",
   "short_name": "FitGlow",
   "description": "Premium fitness, nutrition, progress, and coaching platform.",
   "start_url": "/dashboard",
+=======
+  "name": "Fit & Glow",
+  "short_name": "FitGlow",
+  "description": "Premium fitness, nutrition, progress, and coaching platform.",
+  "start_url": "/login",
+>>>>>>> origin/agent/community-challenges-grow-with-jo
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#FFF8F9",

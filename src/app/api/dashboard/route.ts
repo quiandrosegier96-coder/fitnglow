@@ -28,13 +28,23 @@ function emptyDashboard() {
   return {
     currentWeight: 0,
     currentStreak: 0,
+<<<<<<< HEAD
     calories: { today: 0, week: 0, month: 0, total: 0 },
+=======
+    calories: { today: 0, week: 0, month: 0, total: 0, stravaTotal: 0, workoutTotal: 0 },
+>>>>>>> origin/agent/community-challenges-grow-with-jo
     weightProgress: { startingWeight: 0, currentWeight: 0, difference: 0, trend: "Stable", trendDirection: "stable" },
     bmi: { bmi: 0, category: "Healthy", healthyRange: "Complete onboarding", targetWeight: 0, daysUntilTarget: 0, progressPercentage: 0 },
     level,
     quote: "Small precise actions become visible progress.",
     achievements: [],
     weightHistory: [],
+<<<<<<< HEAD
+=======
+    measurementHistory: [],
+    stravaFeed: [],
+    dailyChallenge: null,
+>>>>>>> origin/agent/community-challenges-grow-with-jo
     quickActions: [
       { href: "/workouts", label: "Start Workout" },
       { href: "/recipes", label: "Recipes" },

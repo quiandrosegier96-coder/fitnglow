@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 -- Fit & Glow Club database snapshot.
+=======
+-- Fit & Glow database snapshot.
+>>>>>>> origin/agent/community-challenges-grow-with-jo
 -- Apply migrations in supabase/migrations in timestamp order.
 -- Current foundation migration:
 -- supabase/migrations/20260714220000_initial_project_foundation.sql

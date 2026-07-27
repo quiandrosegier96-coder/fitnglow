@@ -35,6 +35,10 @@ export async function POST(request: NextRequest) {
   if (!supabase) return NextResponse.json({ error: "Supabase is not configured" }, { status: 503 });
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Login required to save weight." }, { status: 401 });
+<<<<<<< HEAD
+=======
+  await ensureProfile(supabase, user);
+>>>>>>> origin/agent/community-challenges-grow-with-jo
 
   const payload = validateBody(weightLogSchema, await request.json());
   const { data, error } = await supabase
@@ -54,10 +58,29 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
 
+<<<<<<< HEAD
   const dashboard = await new UserMetricsService(supabase).getDashboardMetrics(user.id);
   return NextResponse.json({ log: { weightKg: Number(data.weight_kg), loggedAt: data.logged_at }, dashboard }, { status: 201 });
 }
 
+=======
+  const dashboard = await new UserMetricsService(supabase).getDashboardMetrics(user.id).catch(() => null);
+  return NextResponse.json({ log: { weightKg: Number(data.weight_kg), loggedAt: data.logged_at }, dashboard }, { status: 201 });
+}
+
+async function ensureProfile(supabase: Awaited<ReturnType<typeof createClient>>, user: { id: string; email?: string | null; user_metadata?: { full_name?: string; name?: string } }) {
+  if (!supabase) return;
+  await supabase.from("profiles").upsert(
+    {
+      id: user.id,
+      email: user.email ?? null,
+      full_name: user.user_metadata?.full_name ?? user.user_metadata?.name ?? user.email?.split("@")[0] ?? "Fit & Glow Member"
+    },
+    { onConflict: "id" }
+  );
+}
+
+>>>>>>> origin/agent/community-challenges-grow-with-jo
 function isMissingWeightLogsTable(error: { code?: string; message?: string }) {
   const message = error.message?.toLowerCase() ?? "";
   return error.code === "42P01" || error.code === "PGRST205" || (message.includes("weight_logs") && message.includes("schema cache"));
@@ -72,6 +95,10 @@ async function getProgressMetrics(service: UserMetricsService, userId: string) {
   const profile = {
     height_cm: bodyProfile?.height_cm ?? null,
     target_weight_kg: bodyProfile?.target_weight_kg ?? null,
+<<<<<<< HEAD
+=======
+    startingWeightKg: logs[0]?.weight_kg ?? currentWeight,
+>>>>>>> origin/agent/community-challenges-grow-with-jo
     latestWeightKg: currentWeight
   };
 

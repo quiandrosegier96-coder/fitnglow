@@ -4,6 +4,7 @@ import { Providers } from "@/components/providers";
 
 export const metadata: Metadata = {
   title: {
+<<<<<<< HEAD
     default: "Fit & Glow Club",
     template: "%s | Fit & Glow Club"
   },
@@ -17,6 +18,21 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Fit & Glow Club",
+=======
+    default: "Fit & Glow",
+    template: "%s | Fit & Glow"
+  },
+  description: "A premium fitness, nutrition, coaching, and wellness platform.",
+  applicationName: "Fit & Glow",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "Fit & Glow",
+    statusBarStyle: "default"
+  },
+  openGraph: {
+    title: "Fit & Glow",
+>>>>>>> origin/agent/community-challenges-grow-with-jo
     description: "Premium training, nutrition plans, progress tracking, and community.",
     type: "website"
   }

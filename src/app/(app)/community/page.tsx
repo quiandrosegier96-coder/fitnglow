@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { Heart, MessageCircle, Plus } from "lucide-react";
 import { communityPosts } from "@/data/catalog";
 import { PageHeader } from "@/components/page-header";
@@ -24,6 +25,16 @@ export default function CommunityPage() {
           </Card>
         ))}
       </div>
+=======
+import { PageHeader } from "@/components/page-header";
+import { CommunityFeed } from "@/components/community/community-feed";
+
+export default function CommunityPage() {
+  return (
+    <div className="space-y-6">
+      <PageHeader eyebrow="Community" title="Mijn tijdlijn" description="Al je workouts, Strava activiteiten, challenges en eigen posts chronologisch op een warme Fit & Glow feed." />
+      <CommunityFeed />
+>>>>>>> origin/agent/community-challenges-grow-with-jo
     </div>
   );
 }

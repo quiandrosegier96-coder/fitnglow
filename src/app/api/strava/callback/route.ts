@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+<<<<<<< HEAD
 import { exchangeStravaCode, getStravaRedirectUri, stravaConfigured } from "@/lib/strava";
 
 export async function GET(request: NextRequest) {
   const settingsUrl = new URL("/settings", request.url);
+=======
+import { createPublicUrl } from "@/lib/public-url";
+import { exchangeStravaCode, getStravaRedirectUri, stravaConfigured } from "@/lib/strava";
+
+export async function GET(request: NextRequest) {
+  const settingsUrl = createPublicUrl("/settings", request.url);
+>>>>>>> origin/agent/community-challenges-grow-with-jo
   if (!stravaConfigured()) {
     settingsUrl.searchParams.set("strava", "missing-env");
     return NextResponse.redirect(settingsUrl);
@@ -13,17 +21,29 @@ export async function GET(request: NextRequest) {
   const state = request.nextUrl.searchParams.get("state");
   const error = request.nextUrl.searchParams.get("error");
   if (error || !code || !state) {
+<<<<<<< HEAD
     settingsUrl.searchParams.set("strava", "cancelled");
+=======
+    settingsUrl.searchParams.set("strava", error?.includes("limit") ? "athlete-limit" : "cancelled");
+>>>>>>> origin/agent/community-challenges-grow-with-jo
     return NextResponse.redirect(settingsUrl);
   }
 
   const supabase = await createClient();
+<<<<<<< HEAD
   if (!supabase) return NextResponse.redirect(new URL("/login?redirectedFrom=/settings", request.url));
+=======
+  if (!supabase) return NextResponse.redirect(createPublicUrl("/login?redirectedFrom=/settings", request.url));
+>>>>>>> origin/agent/community-challenges-grow-with-jo
 
   const {
     data: { user }
   } = await supabase.auth.getUser();
+<<<<<<< HEAD
   if (!user) return NextResponse.redirect(new URL("/login?redirectedFrom=/settings", request.url));
+=======
+  if (!user) return NextResponse.redirect(createPublicUrl("/login?redirectedFrom=/settings", request.url));
+>>>>>>> origin/agent/community-challenges-grow-with-jo
 
   const { data: oauthState, error: stateError } = await supabase
     .from("strava_oauth_states")

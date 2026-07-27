@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import Link from "next/link";
 import { ArrowRight, History, Play, Search, SlidersHorizontal, Sparkles } from "lucide-react";
 import { workoutLibrary, workoutCategories, difficultyFilters, durationFilters, muscleGroups, recentlyCompleted } from "@/data/workouts";
@@ -116,4 +117,10 @@ function FilterRow({ title, values }: { title: string; values: string[] }) {
       </div>
     </div>
   );
+=======
+import { redirect } from "next/navigation";
+
+export default function WorkoutsPage() {
+  redirect("/workouts/grow-with-jo");
+>>>>>>> origin/agent/community-challenges-grow-with-jo
 }

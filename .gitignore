@@ -4,5 +4,10 @@ out
 .env
 .env*.local
 *.tsbuildinfo
+<<<<<<< HEAD
+=======
+build.log
+dev-server*.log
+>>>>>>> origin/agent/community-challenges-grow-with-jo
 vercel
 .vercel

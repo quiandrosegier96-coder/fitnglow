@@ -28,6 +28,11 @@ create table if not exists public.strava_activities (
   average_heartrate numeric(7,2),
   max_heartrate numeric(7,2),
   start_date timestamptz not null,
+<<<<<<< HEAD
+=======
+  image_url text,
+  map_polyline text,
+>>>>>>> origin/agent/community-challenges-grow-with-jo
   raw jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),

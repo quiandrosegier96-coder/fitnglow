@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 # Fit & Glow Club
+=======
+# Fit & Glow
+>>>>>>> origin/agent/community-challenges-grow-with-jo
 
 Premium mobile-first fitness, nutrition, progress, coaching, and admin platform built with Next.js 15, React 19, TypeScript, TailwindCSS, Supabase, TanStack Query, React Hook Form, Zod, and Framer Motion.
 

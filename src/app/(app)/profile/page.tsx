@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { Crown, Mail, ShieldCheck, Sparkles } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardTitle } from "@/components/ui/card";
@@ -22,6 +23,16 @@ export default function ProfilePage() {
           </div>
         </div>
       </Card>
+=======
+import { PageHeader } from "@/components/page-header";
+import { ProfileSettingsForm } from "@/components/profile/profile-settings-form";
+
+export default function ProfilePage() {
+  return (
+    <div className="space-y-6">
+      <PageHeader eyebrow="Profile" title="Mijn profiel" description="Bekijk en beheer je persoonlijke gegevens, doelen, voorkeuren en profielfoto." />
+      <ProfileSettingsForm />
+>>>>>>> origin/agent/community-challenges-grow-with-jo
     </div>
   );
 }
