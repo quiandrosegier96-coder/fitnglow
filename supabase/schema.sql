@@ -1,0 +1,12 @@
+-- Fit & Glow Club database snapshot.
+-- Apply migrations in supabase/migrations in timestamp order.
+-- Current foundation migration:
+-- supabase/migrations/20260714220000_initial_project_foundation.sql
+-- Workout module migration:
+-- supabase/migrations/20260714223000_workout_module.sql
+-- Onboarding and body profile migration:
+-- supabase/migrations/20260719090000_onboarding_body_profile.sql
+-- Dynamic dashboard migration:
+-- supabase/migrations/20260719103000_dynamic_dashboard.sql
+-- Weight logs source of truth migration:
+-- supabase/migrations/20260719113000_weight_logs_source_of_truth.sql

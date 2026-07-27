@@ -1,0 +1,80 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap");
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #fff8f9;
+  --foreground: #1f1f1f;
+  --card: #ffffff;
+  --muted: #8a7b80;
+  --primary: #f87aa2;
+  --secondary: #fdc7d7;
+  --border: #f1e7ea;
+  --rose-gold: linear-gradient(135deg, #f87aa2 0%, #f7a9c1 55%, #e2a17d 100%);
+}
+
+.dark {
+  --background: #fff8f9;
+  --foreground: #1f1f1f;
+  --card: #ffffff;
+  --muted: #8a7b80;
+  --primary: #ff8eb1;
+  --secondary: #fdc7d7;
+  --border: #f1e7ea;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-border: var(--border);
+  --font-sans: "Inter", sans-serif;
+  --font-serif: "Playfair Display", serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+a,
+button,
+input,
+select,
+textarea {
+  transition: all 180ms ease;
+}
+
+.rose-gold {
+  background: var(--rose-gold);
+}
+
+.glass-card {
+  background: var(--card);
+  box-shadow: 0 18px 45px rgba(111, 72, 84, 0.06);
+}
+
+.fade-in {
+  animation: fade-in 450ms ease both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
