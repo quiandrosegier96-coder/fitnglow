@@ -1,4 +1,4 @@
--- Fit & Glow Club database snapshot.
+-- Fit & Glow database snapshot.
 -- Apply migrations in supabase/migrations in timestamp order.
 -- Current foundation migration:
 -- supabase/migrations/20260714220000_initial_project_foundation.sql

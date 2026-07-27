@@ -25,7 +25,7 @@ export function InstallPrompt() {
 
   return (
     <div className="fixed bottom-24 left-4 z-50 max-w-xs rounded-[1.5rem] border border-primary/10 bg-card p-4 shadow-2xl lg:bottom-6">
-      <p className="font-bold">Install Fit & Glow Club</p>
+      <p className="font-bold">Install Fit & Glow</p>
       <p className="mt-1 text-sm text-muted">Add the app to your device for faster access and offline shell support.</p>
       <Button
         className="mt-4 w-full"

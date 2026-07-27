@@ -10,5 +10,6 @@ export const navItems = [
   { href: "/nutrition", label: "Nutrition" },
   { href: "/tips", label: "Tips" },
   { href: "/progress", label: "Progress" },
-  { href: "/community", label: "Community" }
+  { href: "/community", label: "Community" },
+  { href: "/notifications", label: "Meldingen" }
 ];

@@ -40,7 +40,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" | "forgot" }) {
         email: values.email,
         password: values.password ?? ""
       });
-      if (error) setMessage(error.message);
+      if (error) setMessage(error.message || "Login mislukt. Controleer je email en wachtwoord.");
       else router.push(searchParams.get("redirectedFrom") ?? "/dashboard");
       return;
     }
@@ -54,14 +54,14 @@ export function AuthForm({ mode }: { mode: "login" | "register" | "forgot" }) {
           data: { full_name: values.fullName ?? "" }
         }
       });
-      setMessage(error ? error.message : "Check your email to verify your account.");
+      setMessage(error ? error.message || "Registratie mislukt." : "Check your email to verify your account.");
       return;
     }
 
     const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
       redirectTo: `${appUrl}/reset-password`
     });
-    setMessage(error ? error.message : "Password reset email sent.");
+    setMessage(error ? error.message || "Reset email kon niet worden verstuurd." : "Password reset email sent.");
   }
 
   async function signInWithProvider(provider: "google" | "apple") {
@@ -82,7 +82,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" | "forgot" }) {
   return (
     <Card className="fade-in border-primary/10 p-6 sm:p-7">
       <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-secondary/40 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-primary">
-        <Sparkles size={14} /> Fit & Glow Club
+        <Sparkles size={14} /> Fit & Glow
       </div>
       <CardTitle>{mode === "login" ? "Welcome back" : mode === "register" ? "Create your glow plan" : "Reset password"}</CardTitle>
       <p className="mt-2 text-sm leading-6 text-muted">
@@ -130,7 +130,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" | "forgot" }) {
         {mode === "register" && (
           <label className="flex items-start gap-3 rounded-2xl bg-secondary/25 p-3 text-sm font-semibold text-muted">
             <input type="checkbox" className="mt-0.5 h-4 w-4 accent-primary" {...register("acceptTerms")} />
-            <span>I agree to the Fit & Glow Club privacy and membership terms.</span>
+            <span>I agree to the Fit & Glow privacy and membership terms.</span>
           </label>
         )}
         {Object.values(formState.errors).map((error, index) => (

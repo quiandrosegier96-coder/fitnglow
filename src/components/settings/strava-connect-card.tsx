@@ -44,6 +44,7 @@ export function StravaConnectCard() {
     const result = searchParams.get("strava");
     if (result === "connected") toast({ title: "Strava gekoppeld", description: "Je kan nu activiteiten synchroniseren." });
     if (result === "missing-env") toast({ title: "Strava mist instellingen", description: "Voeg STRAVA_CLIENT_ID en STRAVA_CLIENT_SECRET toe." });
+    if (result === "athlete-limit") toast({ title: "Strava limiet bereikt", description: "Verwijder oude gekoppelde apps in Strava of maak een nieuwe API app aan." });
     if (result === "error") toast({ title: "Strava koppeling mislukt", description: "Controleer je Strava app instellingen en redirect URL." });
   }, [searchParams, toast]);
 

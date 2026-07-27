@@ -4,5 +4,7 @@ out
 .env
 .env*.local
 *.tsbuildinfo
+build.log
+dev-server*.log
 vercel
 .vercel

@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import { Sparkles } from "lucide-react";
+import { createClientId } from "@/lib/client-id";
 
 type Toast = { id: string; title: string; description?: string };
 type ToastContextValue = { toast: (toast: Omit<Toast, "id">) => void };
@@ -11,7 +12,7 @@ const ToastContext = createContext<ToastContextValue | null>(null);
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const toast = useCallback((item: Omit<Toast, "id">) => {
-    const id = crypto.randomUUID();
+    const id = createClientId();
     setToasts((current) => [...current, { ...item, id }]);
     window.setTimeout(() => setToasts((current) => current.filter((toastItem) => toastItem.id !== id)), 4200);
   }, []);

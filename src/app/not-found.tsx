@@ -7,7 +7,7 @@ export default function NotFound() {
     <main className="grid min-h-screen place-items-center px-4">
       <Card className="max-w-lg text-center">
         <CardTitle>Page not found</CardTitle>
-        <p className="mt-3 text-muted">This part of Fit & Glow Club is not available.</p>
+        <p className="mt-3 text-muted">This part of Fit & Glow is not available.</p>
         <Button asChild className="mt-6"><Link href="/dashboard">Back to dashboard</Link></Button>
       </Card>
     </main>
